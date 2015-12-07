@@ -1,7 +1,8 @@
 'use strict';
 
 import React from 'react-native';
-const { View, ListView, Text, Image, StyleSheet } = React;
+import BookDetails from './BookDetails';
+const { View, ListView, TouchableHighlight, Text, Image, StyleSheet } = React;
 
 let buildUrl = (q) => {
   return `https:/\/\www.googleapis.com/books/v1/volumes?q=${ encodeURIComponent(q) }&langRestrict=en&maxResults=40`;
@@ -11,6 +12,7 @@ class ResultsScreen extends React.Component {
 
   constructor(props) {
     super(props);
+    this.renderBook = this.renderBook.bind(this);
     this.state = { 
       isLoading: true,
       dataSource: new ListView.DataSource({
@@ -48,22 +50,32 @@ class ResultsScreen extends React.Component {
     );
   }
 
+  showBookDetails(book) {
+    this.props.navigator.push({
+      title: book.volumeInfo.title,
+      component: BookDetails,
+      passProps: { book }
+    });
+  }
+
   renderBook(book) {
     return (
-      <View style={styles.row}>
-        <Image
-          style={styles.thumbnail}
-          source={{uri: book.volumeInfo.imageLinks.smallThumbnail}}
-          />
-        <View style={styles.rightContainer}>
-          <Text style={styles.title}>
-           {book.volumeInfo.title}
-          </Text>
-          <Text style={styles.subtitle}>
-            {book.volumeInfo.subtitle}
-          </Text>
+      <TouchableHighlight onPress={ this.showBookDetails.bind(this, book) }>
+        <View style={styles.row}>
+          <Image
+            style={styles.thumbnail}
+            source={{uri: book.volumeInfo.imageLinks.smallThumbnail}}
+            />
+          <View style={styles.rightContainer}>
+            <Text style={styles.title}>
+             {book.volumeInfo.title}
+            </Text>
+            <Text style={styles.subtitle}>
+              {book.volumeInfo.subtitle}
+            </Text>
+          </View>
         </View>
-      </View>
+      </TouchableHighlight>
     );
   }
 
@@ -76,6 +88,7 @@ class ResultsScreen extends React.Component {
           />
     );
   }
+
 
   render() {
     return this.state.isLoading ? this.renderLoadingMessage() : this.renderResults();
@@ -95,7 +108,9 @@ let styles = StyleSheet.create({
     fontWeight: 'normal',
     color: '#fff'
   },
-  listView: {},
+  listView: {
+    paddingTop: 65
+  },
   rightContainer: {
     flex: 1
   },
